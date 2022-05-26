@@ -8,40 +8,35 @@ const MOVE_TYPE = {
     "Paper": PAPER,
     "Scissors": SCISSORS
 };
-const COMPUTER_SIMULATION_TIME = 5000;
+const COMPUTER_SIMULATION_TIME = 3000;
 const LOSS_OUTCOMES = [2, -1];
 const WIN_OUTCOMES = [1, -2];
 const TIE_OUTCOME = 0;
 const N_GESTURES = Object.keys(MOVE_TYPE).length;
 const MAX_ROUNDS = 3;
-document.querySelector('.title-best-of-num').textContent = `Battle of the Hands - Best of ${MAX_ROUNDS}`;
+document.querySelector('.title-best-of-num').textContent = `Rock Paper Scissors - Best of ${MAX_ROUNDS}`;
 let gameOver = false;
+let roundInPlay = false;
 let timeUp = false;
 
 const computerButtons = document.querySelectorAll('.computer-selection>button');
 const buttons = document.querySelectorAll('.player-selection>button');
 buttons.forEach(button => button.addEventListener('click', function (e) {
-    if (!gameOver) {
+    if (!gameOver || !roundInPlay) {
         const PLAYER_GESTURE = e.target.className;
         const COMPUTER_GESTURE = computerPlay()
-        console.log(playRound(PLAYER_GESTURE, COMPUTER_GESTURE));
+        playRound(PLAYER_GESTURE, COMPUTER_GESTURE);
         if (playerScore == Math.ceil(MAX_ROUNDS / 2)) {
             gameOver = true;
-            roundNumberEl.textContent = `Round ${roundNumber - 1}, you won!`
+            setTimeout(() => roundNumberEl.textContent = `You won!`, COMPUTER_SIMULATION_TIME)
         } else if (computerScore == Math.ceil(MAX_ROUNDS / 2)) {
             gameOver = true;
-            roundNumberEl.textContent = `Round ${roundNumber - 1}, you lost!`
+            setTimeout(() => roundNumberEl.textContent = `You lost!`, COMPUTER_SIMULATION_TIME)
         }
     } else {
         alert("Game Over");
     }
 
-}));
-buttons.forEach(button => button.addEventListener('mouseover', function () {
-    this.style.border = "4px solid red";
-}));
-buttons.forEach(button => button.addEventListener('mouseout', function () {
-    this.style.border = "4px solid transparent";
 }));
 
 let playerScore = 0;
@@ -94,53 +89,64 @@ function randomComputerButton(computerButtons) {
     return computerButton;
 }
 
-function animateActualComputerSelection(selectedButtonClass) {
-    const selectedComputerButtonEl = document.querySelector(`.computer-selection>.${selectedButtonClass
-        }`);
+function glowFinalSelections(pcButtonClass, playerButtonClass) {
+    const pcButtonEl =
+        document.querySelector(`.computer-selection>.${pcButtonClass}`);
+    console.log(`.player-selection>.${playerButtonClass}`);
+    const playerButtonEl =
+        document.querySelector(`.player-selection>.${playerButtonClass}`);
     setTimeout(() => {
-        selectedComputerButtonEl.classList.add('animated');
+        pcButtonEl.classList.add('animated');
+        playerButtonEl.classList.add('animated');
     }, COMPUTER_SIMULATION_TIME + 500);
     setTimeout(() => {
-        selectedComputerButtonEl.classList.remove('animated');
+        pcButtonEl.classList.remove('animated');
+        playerButtonEl.classList.remove('animated');
     }, COMPUTER_SIMULATION_TIME + 3000);
 }
 
-function animatePlayerSelection(selectedButtonClass) {
-    const selectedButtonEl = document.querySelector(`.player-selection>.${selectedButtonClass
-        }`);
-    console.log(selectedButtonEl);
+function animateWinnerLoser(winnerButtonClass, loserButtonClass, winnerName, loserName) {
+    const winnerImgEl =
+        document.querySelector(`.${winnerName}-selection>.${winnerButtonClass}`);
+    const loserImgEl =
+        document.querySelector(`.${loserName}-selection>.${loserButtonClass}`);
+    const tempBackgroundImage = loserImgEl.style.backgroundImage;
     setTimeout(() => {
-        selectedButtonEl.style.border = "4px solid red;";
-    }, COMPUTER_SIMULATION_TIME + 500);
+        loserImgEl.style.backgroundImage = "none";
+        winnerImgEl.style.backgroundImage = "none";
+        winnerImgEl.style.backgroundColor = "#a8ff72";
+        loserImgEl.style.backgroundColor = "#ff8686b3";
+    }, COMPUTER_SIMULATION_TIME + 600);
     setTimeout(() => {
-        selectedButtonEl.style.border = "4px solid transparent;";
-    }, COMPUTER_SIMULATION_TIME + 3000);
+        loserImgEl.style.backgroundImage = tempBackgroundImage;
+        winnerImgEl.style.backgroundImage = tempBackgroundImage;
+    }, COMPUTER_SIMULATION_TIME + 3600);
 }
 
 function playRound(playerSelection, computerSelection) {
-    const PLAYER_SELECTION = case_insensitive(playerSelection);
-    const COMPUTER_SELECTION = case_insensitive(computerSelection);
+    if (gameOver || roundInPlay) return;
+    roundInPlay = true;
+    const playerButtonEl = document.querySelector(`.player-selection>.${playerSelection}`);
+    playerButtonEl.classList.add('animated');
     simulateComputerSelection();
     setTimeout(() => timeUp = true, COMPUTER_SIMULATION_TIME);
-    animateActualComputerSelection(COMPUTER_SELECTION);
-    animatePlayerSelection(PLAYER_SELECTION);
-    const RESULT = MOVE_TYPE[PLAYER_SELECTION] - MOVE_TYPE[COMPUTER_SELECTION];
+    glowFinalSelections(computerSelection, playerSelection);
+    const RESULT = MOVE_TYPE[playerSelection] - MOVE_TYPE[computerSelection];
     roundNumber++;
-    roundNumberEl.textContent = `Round ${roundNumber}`;
     if (LOSS_OUTCOMES.includes(RESULT)) {
+        animateWinnerLoser(computerSelection, playerSelection, "computer", "player");
         computerScore++;
-        computerScoreEl.textContent = `Score: ${computerScore}`;
-        return "You Lose this round! " + COMPUTER_SELECTION + " beats " + PLAYER_SELECTION;
+        setTimeout(() => computerScoreEl.textContent = `Score: ${computerScore}`, COMPUTER_SIMULATION_TIME)
     }
     else if (WIN_OUTCOMES.includes(RESULT)) {
+        animateWinnerLoser(playerSelection, computerSelection, "player", "computer");
         playerScore++;
-        playerScoreEl.textContent = `Score: ${playerScore}`;
-        return "You Win this round! " + PLAYER_SELECTION + " beats " + COMPUTER_SELECTION;
+        setTimeout(() => playerScoreEl.textContent = `Score: ${playerScore}`, COMPUTER_SIMULATION_TIME)
     }
-    else if (RESULT === TIE_OUTCOME) {
-        return "You Tie this round!";
-    }
-    else {
+    else if (RESULT !== TIE_OUTCOME) {
         throw Error(MOVE_ERROR_STR)
     }
+    setTimeout(() => {
+        roundInPlay = false;
+    }, COMPUTER_SIMULATION_TIME + 3600);
 }
