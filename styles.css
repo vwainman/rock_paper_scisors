@@ -1,12 +1,17 @@
+html,
 body {
-    height: 80vh;
+    height: 100%;
     text-align: center;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 main {
     display: flex;
-    align-items: center;
-    justify-content: center;
     flex-direction: column;
     width: 100%;
 }
@@ -51,4 +56,8 @@ button>* {
 
 .player-selection>button {
     cursor: pointer;
+}
+
+footer {
+    flex-shrink: 0;
 }
