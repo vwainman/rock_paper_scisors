@@ -1,5 +1,5 @@
-Rock Paper Scissors
+# Rock Paper Scissors
 
-An Odin foundations project to learn vanilla javascript
+A Rock Paper Scissors game with vanilla javascript, css and html.
 
-See [here](https://vwainman.github.io/rock_paper_scissors/).
+[Live Demo](https://vwainman.github.io/rock_paper_scissors/).
